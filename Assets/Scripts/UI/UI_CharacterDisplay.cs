@@ -27,6 +27,8 @@ public class UI_CharacterDisplay : MonoBehaviour
    //the current page that user is viewing
    private int currentPage = 1;
 
+   private int totalPages;
+
 
    private void Awake() {
 
@@ -72,19 +74,13 @@ public class UI_CharacterDisplay : MonoBehaviour
             foreach (var character in response.results)
             {
 
-                /*//Duplicate the item template inside the container
-                Transform characterItemTransform = Instantiate(characterItemTemplate, characterContainer);
-                RectTransform characterItemRectTransform = characterItemTransform.GetComponent<RectTransform>(); */
-
                 // Duplicate or retrieve from pool the item template inside the container
-                 Transform characterItemTransform = characterItemPool.GetObject();  // Retrieve from object pool (assuming you're using the pool here)
-                 
-                 
-                    
+                Transform characterItemTransform = characterItemPool.GetObject();  // Retrieve from object pool (assuming you're using the pool here)
+
                 //set the character name
                 characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = character.name;
 
-                //characterItemTransform.gameObject.SetActive(true);
+
 
                 //Button button = characterItemTransform.GetComponent<Button>();
             }
@@ -101,7 +97,7 @@ public class UI_CharacterDisplay : MonoBehaviour
    private void CreatePageButtonITem()
    {
 
-        int totalPages = response.info.pages;
+        totalPages = response.info.pages;
 
         if(totalPages > 0)
         {
@@ -129,20 +125,30 @@ public class UI_CharacterDisplay : MonoBehaviour
 
    public async void LoadSpecificPage(int pageNumber)
    {
+     currentPage = pageNumber;
      await LoadCharacters(pageNumber);
    }
 
 
     public async void NextPage()
     {
-        currentPage++;
-        await LoadCharacters(currentPage);
+        if(currentPage < totalPages)
+        {
+            currentPage += 1;
+            ClearCharacterItems();
+            await LoadCharacters(currentPage);
+        }
     }
 
     public async void PreviousPage()
     {
-        currentPage = Mathf.Max(1, currentPage - 1);
-        await LoadCharacters(currentPage);
+        if(currentPage > 0)
+        {
+            currentPage -= 1;
+            ClearCharacterItems();
+            await LoadCharacters(currentPage);
+        };
+      
     }
 
     /// <summary>
