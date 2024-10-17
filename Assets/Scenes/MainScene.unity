@@ -551,10 +551,10 @@ MonoBehaviour:
   m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
-  m_Elasticity: 0.1
+  m_Elasticity: 0.05
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 0.5
   m_Viewport: {fileID: 1075266827}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
@@ -1357,7 +1357,7 @@ GameObject:
   - component: {fileID: 1004038220}
   - component: {fileID: 1004038221}
   m_Layer: 5
-  m_Name: pageScroll
+  m_Name: pageNumberScroll
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1407,7 +1407,7 @@ MonoBehaviour:
   m_Horizontal: 1
   m_Vertical: 0
   m_MovementType: 1
-  m_Elasticity: 0.1
+  m_Elasticity: 0.5
   m_Inertia: 1
   m_DecelerationRate: 0.135
   m_ScrollSensitivity: 1
@@ -1524,7 +1524,7 @@ GameObject:
   - component: {fileID: 1082585920}
   - component: {fileID: 1082585919}
   m_Layer: 5
-  m_Name: PageNumber
+  m_Name: pageNumberButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1714,7 +1714,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1116486650}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 183274545}
+        m_TargetAssemblyTypeName: UI_CharacterDisplay, Assembly-CSharp
+        m_MethodName: PreviousPage
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1116486650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2046,7 +2058,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1656546759}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 183274545}
+        m_TargetAssemblyTypeName: UI_CharacterDisplay, Assembly-CSharp
+        m_MethodName: NextPage
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1656546759
 MonoBehaviour:
   m_ObjectHideFlags: 0

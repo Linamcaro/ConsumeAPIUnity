@@ -1,5 +1,10 @@
+using System.Threading.Tasks;
+using Mono.Cecil.Cil;
+using Prueba.ApiService;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 public class UI_CharacterDisplay : MonoBehaviour
 {
@@ -11,91 +16,121 @@ public class UI_CharacterDisplay : MonoBehaviour
    [SerializeField] private Transform pageContainer;
    [SerializeField] private Transform pageItemTemplate;
 
+   private CharacterResponse response;
+
+   // Instance of ApiService
+   private ApiRequest apiRequest;
+
+   private int currentPage = 1;
+
 
    private void Awake() {
 
     characterItemTemplate.gameObject.SetActive(false);
     pageItemTemplate.gameObject.SetActive(false);
+
+    apiRequest = new ApiRequest();
    }
 
-   private void Start() {
-
-    CreateITem("Lina");
-    CreateITem("Pablo");
-    CreateITem("Camila");
-    CreateITem("Carlos");
-    CreateITem("Juliana");
-    CreateITem("Andres");
-    CreateITem("Esteban");
-    CreateITem("Andrea");
-    CreateITem("Kevyn");
-    CreateITem("Natalia");
-    CreateITem("Esteban");
-    CreateITem("Andrea");
-    CreateITem("Kevyn");
-    CreateITem("Natalia");
-     CreateITem("Natalia");
-    CreateITem("Esteban");
-    CreateITem("Andrea");
-    CreateITem("Kevyn");
-    CreateITem("Natalia");
-
-
-
-    CreatePageButtonITem(1);
-    CreatePageButtonITem(2);
-    CreatePageButtonITem(3);
-    CreatePageButtonITem(4);
-    CreatePageButtonITem(5);
-    CreatePageButtonITem(6);
-    CreatePageButtonITem(7);
-    CreatePageButtonITem(8);
-    CreatePageButtonITem(9);
-    CreatePageButtonITem(10);
-    CreatePageButtonITem(11);
-    CreatePageButtonITem(12);
-    CreatePageButtonITem(13);
-    CreatePageButtonITem(14);
-
-   }
-
+    private async void Start()
+    {
+        await LoadCharacters(currentPage);
+        CreatePageButtonITem();
+    }
+ 
 
    /// <summary>
    /// Spawn a character item template
    /// </summary>
    /// <param name="intemName"></param>
-   private void CreateITem(string intemName)
+   public async Task LoadCharacters(int page)
+   {
+        response = await apiRequest.GetCharacter(page);
+
+        CreateCharacterITem();
+   }
+
+    /// <summary>
+    /// Create a Character button item
+    /// </summary>
+   private void CreateCharacterITem()
    {
 
-     //Duplicate the item template inside the container
-     Transform characterItemTransform = Instantiate(characterItemTemplate, characterContainer);
-     RectTransform characterItemRectTransform = characterItemTransform.GetComponent<RectTransform>(); 
-     //set the text
-     characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = intemName;
+    if (response != null)
+        {
+            foreach (var character in response.results)
+            {
 
-     characterItemTransform.gameObject.SetActive(true);
+                //Duplicate the item template inside the container
+                Transform characterItemTransform = Instantiate(characterItemTemplate, characterContainer);
+                RectTransform characterItemRectTransform = characterItemTransform.GetComponent<RectTransform>(); 
+                    
+                //set the text
+                characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = character.name;
 
-     //Button button = characterItemTransform.GetComponent<Button>();
+                characterItemTransform.gameObject.SetActive(true);
+
+                //Button button = characterItemTransform.GetComponent<Button>();
+            }
+
+        }
 
    }
+
 
       /// <summary>
-   /// Spawn a character item template
+   /// Spawn a page button item template
    /// </summary>
    /// <param name="intemName"></param>
-   private void CreatePageButtonITem(int pageNumber)
+   private void CreatePageButtonITem()
    {
 
-     //Duplicate the item template inside the container
-     Transform pageItemTransform = Instantiate(pageItemTemplate, pageContainer);
-     RectTransform pageItemRectTransform = pageItemTransform.GetComponent<RectTransform>(); 
-    
-     //set the text
-     pageItemTransform.Find("page").GetComponent<TextMeshProUGUI>().text = pageNumber.ToString();
+        int totalPages = response.info.pages;
 
-     pageItemTransform.gameObject.SetActive(true);
+        if(totalPages > 0)
+        {
 
-     //Button button = characterItemTransform.GetComponent<Button>();
+            for(int page = 1; page <= totalPages; page++)
+            {
+                
+                //Duplicate the item template inside the container
+                Transform pageItemTransform = Instantiate(pageItemTemplate, pageContainer);
+                RectTransform pageItemRectTransform = pageItemTransform.GetComponent<RectTransform>(); 
+                
+                //set the text
+                TextMeshProUGUI pageTextUI = pageItemTransform.Find("page").GetComponent<TextMeshProUGUI>();
+                pageTextUI.text = page.ToString();
+                
 
+                pageItemTransform.gameObject.SetActive(true);
+                
+                int pageNumber = int.Parse(pageTextUI.text);
+                Button pageNumberButton = pageItemTransform.GetComponent<Button>();
+                pageNumberButton.onClick.AddListener(() => LoadSpecificPage(pageNumber));
+            }
+        }
    }
+
+   public async void LoadSpecificPage(int pageNumber)
+   {
+     await LoadCharacters(pageNumber);
+   }
+
+
+    public async void NextPage()
+    {
+        currentPage++;
+        await LoadCharacters(currentPage);
+    }
+
+    public async void PreviousPage()
+    {
+        currentPage = Mathf.Max(1, currentPage - 1);
+        await LoadCharacters(currentPage);
+    }
+
+  
 }
+
+
+
