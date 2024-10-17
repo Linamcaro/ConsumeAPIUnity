@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Mono.Cecil.Cil;
 using Prueba.ApiService;
@@ -16,20 +17,27 @@ public class UI_CharacterDisplay : MonoBehaviour
    [SerializeField] private Transform pageContainer;
    [SerializeField] private Transform pageItemTemplate;
 
+   //character items object pool
+    private ObjectPool<Transform> characterItemPool;
+
+   // Network variable
+   private ApiRequest apiRequest;
    private CharacterResponse response;
 
-   // Instance of ApiService
-   private ApiRequest apiRequest;
-
+   //the current page that user is viewing
    private int currentPage = 1;
 
 
    private void Awake() {
 
-    characterItemTemplate.gameObject.SetActive(false);
-    pageItemTemplate.gameObject.SetActive(false);
+        characterItemTemplate.gameObject.SetActive(false);
+        pageItemTemplate.gameObject.SetActive(false);
 
-    apiRequest = new ApiRequest();
+        apiRequest = new ApiRequest();
+
+        // Initialize the object pool with an initial size of 10 (you can adjust the size as needed)
+        characterItemPool = new ObjectPool<Transform>(characterItemTemplate, characterContainer, 1);
+
    }
 
     private async void Start()
@@ -44,7 +52,10 @@ public class UI_CharacterDisplay : MonoBehaviour
    /// </summary>
    /// <param name="intemName"></param>
    public async Task LoadCharacters(int page)
-   {
+   {    
+        // Clear the existing character items before loading new ones
+        ClearCharacterItems();
+
         response = await apiRequest.GetCharacter(page);
 
         CreateCharacterITem();
@@ -53,7 +64,7 @@ public class UI_CharacterDisplay : MonoBehaviour
     /// <summary>
     /// Create a Character button item
     /// </summary>
-   private void CreateCharacterITem()
+    private void CreateCharacterITem()
    {
 
     if (response != null)
@@ -61,14 +72,19 @@ public class UI_CharacterDisplay : MonoBehaviour
             foreach (var character in response.results)
             {
 
-                //Duplicate the item template inside the container
+                /*//Duplicate the item template inside the container
                 Transform characterItemTransform = Instantiate(characterItemTemplate, characterContainer);
-                RectTransform characterItemRectTransform = characterItemTransform.GetComponent<RectTransform>(); 
+                RectTransform characterItemRectTransform = characterItemTransform.GetComponent<RectTransform>(); */
+
+                // Duplicate or retrieve from pool the item template inside the container
+                 Transform characterItemTransform = characterItemPool.GetObject();  // Retrieve from object pool (assuming you're using the pool here)
+                 
+                 
                     
-                //set the text
+                //set the character name
                 characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = character.name;
 
-                characterItemTransform.gameObject.SetActive(true);
+                //characterItemTransform.gameObject.SetActive(true);
 
                 //Button button = characterItemTransform.GetComponent<Button>();
             }
@@ -129,6 +145,20 @@ public class UI_CharacterDisplay : MonoBehaviour
         await LoadCharacters(currentPage);
     }
 
+    /// <summary>
+    /// return the character item to the pool
+    /// </summary>
+    private void ClearCharacterItems()
+    {
+        foreach (Transform child in characterContainer)
+        {
+            // Return the active objects back to the pool
+            if (child.gameObject.activeSelf)
+            {
+                characterItemPool.ReturnObject(child);
+            }
+        }
+    }
   
 }
 
