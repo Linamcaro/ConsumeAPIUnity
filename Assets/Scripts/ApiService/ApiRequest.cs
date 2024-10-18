@@ -1,38 +1,30 @@
-using System.Threading.Tasks;
+using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Prueba.ApiService
+namespace Test.ApiService
 {
     public class ApiRequest
     {
-        private readonly string apiUrl = "https://rickandmortyapi.com/api/character?page={0}";
+        //Event that triggers when there is an connection error
+        public event Action<string> OnWebRequestError;
 
-        public async Task<CharacterResponse> GetCharacter(int page)
+        public UnityWebRequest GetCharacter(string url)
         {
-            //create the apiUrl with the webpage
-            string url = string.Format(apiUrl, page);
-            
-            using (UnityWebRequest request = UnityWebRequest.Get(url))
+            var request = new UnityWebRequest(url);
+
+            //Check for connection errors
+            if(request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
-                var operation = request.SendWebRequest();
+               Debug.LogError(request.error);
 
-                while(!operation.isDone)
-                {
-                    await Task.Yield();
-                }
-                
-                //Check if there are any error trying to comunicate with the server or returned from the server
-                if(request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-                {
-                    Debug.LogError(request.error);
-                    return null;
-                }
-
-                return JsonUtility.FromJson<CharacterResponse>(request.downloadHandler.text);
-
+               OnWebRequestError?.Invoke(request.error);   
             }
-        }
 
+            request.downloadHandler = new DownloadHandlerBuffer();
+
+            return request;
+        }
     }
 }
+
