@@ -1,9 +1,8 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Test.ApiService;
-using System.Collections;
-using System;
+using Test.CharacterRepository;
+using UnityEditor.PackageManager;
 
 
 public class UI_CharacterDisplay : MonoBehaviour
@@ -12,23 +11,18 @@ public class UI_CharacterDisplay : MonoBehaviour
     //Character list
    [SerializeField] private Transform characterContainer;
    [SerializeField] private Transform characterItemTemplate;
-    
     //Pagination
    [SerializeField] private Transform pageContainer;
    [SerializeField] private Transform pageItemTemplate;
-
+   [SerializeField] private Transform paginationItemsContainer;
    [SerializeField] private Transform errorPanel;
+   [SerializeField] private Transform uiMenuOptions;
    //character items object pool
    private ObjectPool<Transform> characterItemPool;
 
    [SerializeField] private UI_CharacterDetail characterDetail;
 
-   #endregion
-
-   #region ============= Network Variables ===============
-   // Network variable
-   private ApiRequest apiRequest;
-   private CharacterResponse response;
+   private CharacterRepository characterRepository;
 
    #endregion
 
@@ -42,15 +36,18 @@ public class UI_CharacterDisplay : MonoBehaviour
     #endregion
 
     #region ============= Unity Lifecycle Methods ===============
+
     private void Awake() {
 
         characterItemTemplate.gameObject.SetActive(false);
         pageItemTemplate.gameObject.SetActive(false);
         errorPanel.gameObject.SetActive(false);
+        uiMenuOptions.gameObject.SetActive(false);
 
-        //Create instance of ApiRequest and subscribe to the OnWebRequest event
-        apiRequest = new ApiRequest();
-        apiRequest.OnWebRequestError += OnWebRequestError;
+        characterRepository = CharacterRepository.Instance;
+
+        characterRepository.OnWebRequestError += OnWebRequestError;
+        characterRepository.OnCharacterRequest += OnCharacterRequest;
 
         // Initialize the object pool with an initial size of 10 (you can adjust the size as needed)
         characterItemPool = new ObjectPool<Transform>(characterItemTemplate, characterContainer, 1);
@@ -62,39 +59,33 @@ public class UI_CharacterDisplay : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(LoadCharacters(currentPage));
-        
+        //Load the first page 
+        StartCoroutine(characterRepository.LoadCharacters(currentPage));
     }
-    #endregion
- 
-    #region ============= Network Functions ===============
 
-   /// <summary>
-   /// Spawn a character item template
-   /// </summary>
-   /// <param name="page"></param>
-   private IEnumerator LoadCharacters(int page)
-   {    
-        // Clear the existing character items before loading new ones
+    #endregion
+
+    #region ============= Event Handling Functions ===============
+
+    private void OnCharacterRequest(CharacterResponse response)
+    {
+
+        CharacterResponse characterResponse = response;
+
         ClearCharacterItems();
 
-        //Format the URL to request with the page number requested
-        string formatedUrl = string.Format(Constants.apiUrl, page);
-        var requestData = apiRequest.GetCharacter(formatedUrl);
-
-        yield return requestData.SendWebRequest();
-
-        response = JsonUtility.FromJson<CharacterResponse>(requestData.downloadHandler.text);
-
-        CreateCharacterITem();
+        CreateCharacterITem(response);
 
          // Check if the page buttons are already created
         if (!isPaginationCreated)
         {
-            CreatePageButtonITem();
+            CreatePageButtonITem(response);
             isPaginationCreated = true; // Mark pagination as created
         }
-   }
+        
+        characterContainer.gameObject.SetActive(true);
+        paginationItemsContainer.gameObject.SetActive(true);
+    }
 
    /// <summary>
    /// Show error Message to user
@@ -102,21 +93,35 @@ public class UI_CharacterDisplay : MonoBehaviour
    /// <param name="errorMessage"></param>
    private void OnWebRequestError(string errorMessage)
    {
-      errorPanel.Find("errorText").GetComponent<TextMeshProUGUI>().text = "Information failed error: " + errorMessage;
+      characterContainer.gameObject.SetActive(false);
+      paginationItemsContainer.gameObject.SetActive(false);
+      uiMenuOptions.gameObject.SetActive(false);
+
+      errorPanel.Find("errorText").GetComponent<TextMeshProUGUI>().text = $"Failed to retrieve data. Error {errorMessage}. Please try again";
       errorPanel.gameObject.SetActive(true);
+    
+
+      Button tryAgainButton = errorPanel.Find("tryAgainButton").GetComponent<Button>();
+      
+      tryAgainButton.onClick.AddListener(()=>{
+            StartCoroutine(characterRepository.LoadCharacters(currentPage));
+            errorPanel.gameObject.SetActive(false);
+        });
    }
+
     #endregion
 
     #region ============= UI creation functions ===============
+
     /// <summary>
     /// Create a Character button item
     /// </summary>
-    private void CreateCharacterITem()
+    private void CreateCharacterITem(CharacterResponse characterResponse)
     {
 
-        if (response != null)
+        if (characterResponse != null)
         {
-            foreach (var character in response.results)
+            foreach (var character in characterResponse.results)
             {
                 // Duplicate or retrieve from pool the item template inside the container
                 Transform characterItemTransform = characterItemPool.GetObject();  // Retrieve from object pool (assuming you're using the pool here)
@@ -131,6 +136,7 @@ public class UI_CharacterDisplay : MonoBehaviour
 
                     characterDetail.SetCharacterDetails(characterInfo);
                     gameObject.SetActive(false);
+                    uiMenuOptions.gameObject.SetActive(uiMenuOptions);
 
                 });
             }
@@ -140,9 +146,9 @@ public class UI_CharacterDisplay : MonoBehaviour
     /// <summary>
     /// Spawn a page button item template
     /// </summary>
-    private void CreatePageButtonITem()
+    private void CreatePageButtonITem(CharacterResponse characterResponse)
     {
-        totalPages = response.info.pages;
+        totalPages = characterResponse.info.pages;
 
         if(totalPages > 0)
         {
@@ -168,32 +174,43 @@ public class UI_CharacterDisplay : MonoBehaviour
     #endregion
 
     #region ============= UI functionality functions ===============
-   public void LoadSpecificPage(int pageNumber)
-   {
-    if(currentPage == pageNumber) return;
+    
+    /// <summary>
+    /// Function is called when a page button is pressed
+    /// </summary>
+    /// <param name="pageNumber"></param>
+    public void LoadSpecificPage(int pageNumber)
+    {
+        if(currentPage == pageNumber) return;
 
-     currentPage = pageNumber;
-     StartCoroutine(LoadCharacters(currentPage));
-     
+        currentPage = pageNumber;
+        StartCoroutine(characterRepository.LoadCharacters(currentPage));
+        
     }
 
+    /// <summary>
+    /// Function when the next page button is called
+    /// </summary>
     public void NextPage()
     {
         if(currentPage < totalPages)
         {
             currentPage += 1;
             ClearCharacterItems();
-            StartCoroutine(LoadCharacters(currentPage));
+            StartCoroutine(characterRepository.LoadCharacters(currentPage));
         }
     }
 
+    /// <summary>
+    /// Function when the previous page button is called
+    /// </summary>
     public void PreviousPage()
     {
         if(currentPage > 0)
         {
             currentPage -= 1;
             ClearCharacterItems();
-            StartCoroutine(LoadCharacters(currentPage));
+            StartCoroutine(characterRepository.LoadCharacters(currentPage));
         };
     }
 
