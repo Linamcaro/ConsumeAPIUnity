@@ -21,6 +21,8 @@ public class UI_CharacterDisplay : MonoBehaviour
    //character items object pool
    private ObjectPool<Transform> characterItemPool;
 
+   [SerializeField] private UI_CharacterDetail characterDetail;
+
    #endregion
 
    #region ============= Network Variables ===============
@@ -31,10 +33,10 @@ public class UI_CharacterDisplay : MonoBehaviour
    #endregion
 
     #region ============= Utility Variables ===============
-   //the current page that user is viewing
-   private int currentPage;
-   private int totalPages;
-   // Flag to check if pagination buttons have already been created
+    //the current page that user is viewing
+    private int currentPage;
+    private int totalPages;
+    // Flag to check if pagination buttons have already been created
     private bool isPaginationCreated;
 
     #endregion
@@ -122,8 +124,15 @@ public class UI_CharacterDisplay : MonoBehaviour
                 //set the character name
                 characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = character.name;
 
-                /*Button characterInformationButton = characterItemTransform.GetComponent<Button>();
-                characterInformationButton.onClick.AddListener(() => LoadCharacterInformation;*/
+                Character characterInfo = character;
+                Button characterInformationButton = characterItemTransform.GetComponent<Button>();
+
+                characterInformationButton.onClick.AddListener(() => {
+
+                    characterDetail.SetCharacterDetails(characterInfo);
+                    gameObject.SetActive(false);
+
+                });
             }
         }
     }
@@ -161,8 +170,11 @@ public class UI_CharacterDisplay : MonoBehaviour
     #region ============= UI functionality functions ===============
    public void LoadSpecificPage(int pageNumber)
    {
+    if(currentPage == pageNumber) return;
+
      currentPage = pageNumber;
      StartCoroutine(LoadCharacters(currentPage));
+     
     }
 
     public void NextPage()
@@ -184,6 +196,7 @@ public class UI_CharacterDisplay : MonoBehaviour
             StartCoroutine(LoadCharacters(currentPage));
         };
     }
+
 
     #endregion
 

@@ -1,16 +1,38 @@
+using TMPro;
 using UnityEngine;
 
 public class UI_CharacterDetail : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    #region ============= UI Variables ===============
+   [SerializeField] private TextMeshProUGUI characterName;
+   [SerializeField] private TextMeshProUGUI characterStatus;
+   [SerializeField] private TextMeshProUGUI characterSpecie;
+   [SerializeField] private TextMeshProUGUI characterLastLocation;
+   [SerializeField] private TextMeshProUGUI characterFirstSeenLocation;
+
+   #endregion
+
+   void Start()
+   {
+    
+        HideCharacterDetails();
+
+   }
+
+    public void SetCharacterDetails(Character character)
     {
-        
+        characterName.text = character.name;
+        characterStatus.text = character.status;
+        characterSpecie.text = character.species;
+        characterLastLocation.text = character.location.name;
+        characterFirstSeenLocation.text = character.origin.name;
+
+        gameObject.SetActive(true);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void HideCharacterDetails()
     {
-        
+        gameObject.SetActive(false);
     }
+   
 }
