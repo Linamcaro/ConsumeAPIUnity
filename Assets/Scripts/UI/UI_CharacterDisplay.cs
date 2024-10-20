@@ -38,11 +38,8 @@ public class UI_CharacterDisplay : MonoBehaviour
     #region ============= Unity Lifecycle Methods ===============
 
     private void Awake() {
-
         characterItemTemplate.gameObject.SetActive(false);
         pageItemTemplate.gameObject.SetActive(false);
-        errorPanel.gameObject.SetActive(false);
-        uiMenuOptions.gameObject.SetActive(false);
 
         characterRepository = CharacterRepository.Instance;
 
@@ -104,7 +101,11 @@ public class UI_CharacterDisplay : MonoBehaviour
       Button tryAgainButton = errorPanel.Find("tryAgainButton").GetComponent<Button>();
       
       tryAgainButton.onClick.AddListener(()=>{
+            //Call for the character details
             StartCoroutine(characterRepository.LoadCharacters(currentPage));
+            //Hide the menu options buttons
+            uiMenuOptions.gameObject.SetActive(true);
+            //Hide the error panel
             errorPanel.gameObject.SetActive(false);
         });
    }
@@ -135,8 +136,9 @@ public class UI_CharacterDisplay : MonoBehaviour
                 characterInformationButton.onClick.AddListener(() => {
 
                     characterDetail.SetCharacterDetails(characterInfo);
+                    uiMenuOptions.gameObject.SetActive(false);
                     gameObject.SetActive(false);
-                    uiMenuOptions.gameObject.SetActive(uiMenuOptions);
+                    
 
                 });
             }
@@ -167,7 +169,9 @@ public class UI_CharacterDisplay : MonoBehaviour
                 //Set event for when a page number button is clicked
                 int pageNumber = int.Parse(pageTextUI.text);
                 Button pageNumberButton = pageItemTransform.GetComponent<Button>();
-                pageNumberButton.onClick.AddListener(() => LoadSpecificPage(pageNumber));
+                pageNumberButton.onClick.AddListener(() => {
+                    LoadSpecificPage(pageNumber);
+                });
             }
         }
     }

@@ -15,7 +15,7 @@ public class UI_CharacterDetail : MonoBehaviour
    void Start()
    {
     
-        HideCharacterDetails();
+        //HideCharacterDetails();
 
    }
 
