@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Test.CharacterRepository;
 using UnityEditor.PackageManager;
+using System;
 
 
 public class UI_CharacterDisplay : MonoBehaviour
@@ -11,16 +12,21 @@ public class UI_CharacterDisplay : MonoBehaviour
     //Character list
    [SerializeField] private Transform characterContainer;
    [SerializeField] private Transform characterItemTemplate;
+   [SerializeField] private Transform characterPanel;
     //Pagination
-   [SerializeField] private Transform pageContainer;
    [SerializeField] private Transform pageItemTemplate;
    [SerializeField] private Transform paginationItemsContainer;
+
+   //Character Detail Variables
+   [SerializeField] private UI_CharacterDetail characterDetail;
+   [SerializeField] private Transform characterDetailPanel;
+
    [SerializeField] private Transform errorPanel;
    [SerializeField] private Transform uiMenuOptions;
-   //character items object pool
-   private ObjectPool<Transform> characterItemPool;
 
-   [SerializeField] private UI_CharacterDetail characterDetail;
+   //object pool
+   private ObjectPool<Transform> characterItemPool;
+   private ObjectPool<Transform> pageButtonItemPool;
 
    private CharacterRepository characterRepository;
 
@@ -35,29 +41,41 @@ public class UI_CharacterDisplay : MonoBehaviour
 
     #endregion
 
+    public event Action<Transform> OnCharacterListRequest;
+    public event Action<Transform> OnChangePage;
+    public event Action<Transform, Transform> OnCharacterInfoRequest;
+    public event Action<Transform> OnErrorTriggered;
+
+
     #region ============= Unity Lifecycle Methods ===============
 
     private void Awake() {
         characterItemTemplate.gameObject.SetActive(false);
         pageItemTemplate.gameObject.SetActive(false);
+        characterPanel.gameObject.SetActive(false);
+
+        //characterPanel.gameObject.SetActive(false);
 
         characterRepository = CharacterRepository.Instance;
 
+        //event suscription
         characterRepository.OnWebRequestError += OnWebRequestError;
         characterRepository.OnCharacterRequest += OnCharacterRequest;
 
         // Initialize the object pool with an initial size of 10 (you can adjust the size as needed)
-        characterItemPool = new ObjectPool<Transform>(characterItemTemplate, characterContainer, 1);
+        characterItemPool = new ObjectPool<Transform>(characterItemTemplate, characterContainer, 2);
+        pageButtonItemPool = new ObjectPool<Transform>(pageItemTemplate, paginationItemsContainer, 2);
 
-        currentPage = 1;
-
+        //variables set up
+        currentPage = 0;
         isPaginationCreated = false;
+
     }
 
     private void Start()
     {
         //Load the first page 
-        StartCoroutine(characterRepository.LoadCharacters(currentPage));
+       LoadPage(1);
     }
 
     #endregion
@@ -73,15 +91,18 @@ public class UI_CharacterDisplay : MonoBehaviour
 
         CreateCharacterITem(response);
 
+        OnCharacterListRequest?.Invoke(characterPanel); 
+
+        characterContainer.gameObject.SetActive(true);
+        paginationItemsContainer.gameObject.SetActive(true);
+
          // Check if the page buttons are already created
         if (!isPaginationCreated)
         {
             CreatePageButtonITem(response);
             isPaginationCreated = true; // Mark pagination as created
         }
-        
-        characterContainer.gameObject.SetActive(true);
-        paginationItemsContainer.gameObject.SetActive(true);
+
     }
 
    /// <summary>
@@ -89,15 +110,17 @@ public class UI_CharacterDisplay : MonoBehaviour
    /// </summary>
    /// <param name="errorMessage"></param>
    private void OnWebRequestError(string errorMessage)
-   {
-      characterContainer.gameObject.SetActive(false);
+   {  
+      OnChangePage?.Invoke(characterPanel);
+
       paginationItemsContainer.gameObject.SetActive(false);
       uiMenuOptions.gameObject.SetActive(false);
-
+      
+      OnErrorTriggered?.Invoke(errorPanel);
       errorPanel.Find("errorText").GetComponent<TextMeshProUGUI>().text = $"Failed to retrieve data. Error {errorMessage}. Please try again";
-      errorPanel.gameObject.SetActive(true);
+      
+      //errorPanel.gameObject.SetActive(true);
     
-
       Button tryAgainButton = errorPanel.Find("tryAgainButton").GetComponent<Button>();
       
       tryAgainButton.onClick.AddListener(()=>{
@@ -108,6 +131,8 @@ public class UI_CharacterDisplay : MonoBehaviour
             //Hide the error panel
             errorPanel.gameObject.SetActive(false);
         });
+
+        
    }
 
     #endregion
@@ -124,23 +149,18 @@ public class UI_CharacterDisplay : MonoBehaviour
         {
             foreach (var character in characterResponse.results)
             {
-                // Duplicate or retrieve from pool the item template inside the container
-                Transform characterItemTransform = characterItemPool.GetObject();  // Retrieve from object pool (assuming you're using the pool here)
+                Character characterInfo = character;
+
+                //Retrieve from the character item pool the item template inside the container
+                Transform characterItemTransform = characterItemPool.GetObject(); 
 
                 //set the character name
-                characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = character.name;
+                characterItemTransform.Find("name").GetComponent<TextMeshProUGUI>().text = characterInfo.name;
 
-                Character characterInfo = character;
+                //Set up button OnClick functionality
                 Button characterInformationButton = characterItemTransform.GetComponent<Button>();
-
-                characterInformationButton.onClick.AddListener(() => {
-
-                    characterDetail.SetCharacterDetails(characterInfo);
-                    uiMenuOptions.gameObject.SetActive(false);
-                    gameObject.SetActive(false);
-                    
-
-                });
+                characterInformationButton.onClick.AddListener(() => ShowCharacterInfo(characterInfo, characterItemTransform )
+                );
             }
         }
     }
@@ -156,22 +176,25 @@ public class UI_CharacterDisplay : MonoBehaviour
         {
             for(int page = 1; page <= totalPages; page++)
             {
-                //Duplicate the item template inside the container
-                Transform pageItemTransform = Instantiate(pageItemTemplate, pageContainer);
-                RectTransform pageItemRectTransform = pageItemTransform.GetComponent<RectTransform>(); 
+                int pageNumber = page;
+
+                // Retrieve from the page button item pool the item template inside the container
+                Transform pageItemTransform = pageButtonItemPool.GetObject(); 
                 
                 //set the page text number
                 TextMeshProUGUI pageTextUI = pageItemTransform.Find("page").GetComponent<TextMeshProUGUI>();
-                pageTextUI.text = page.ToString();
+                pageTextUI.text = pageNumber.ToString();
                 
                 pageItemTransform.gameObject.SetActive(true);
                 
                 //Set event for when a page number button is clicked
-                int pageNumber = int.Parse(pageTextUI.text);
                 Button pageNumberButton = pageItemTransform.GetComponent<Button>();
                 pageNumberButton.onClick.AddListener(() => {
-                    LoadSpecificPage(pageNumber);
-                });
+
+                    OnChangePage?.Invoke(characterPanel);
+                    LoadPage(pageNumber);
+                    });
+
             }
         }
     }
@@ -183,13 +206,14 @@ public class UI_CharacterDisplay : MonoBehaviour
     /// Function is called when a page button is pressed
     /// </summary>
     /// <param name="pageNumber"></param>
-    public void LoadSpecificPage(int pageNumber)
+    public void LoadPage(int pageNumber)
     {
         if(currentPage == pageNumber) return;
 
         currentPage = pageNumber;
+
         StartCoroutine(characterRepository.LoadCharacters(currentPage));
-        
+
     }
 
     /// <summary>
@@ -199,9 +223,11 @@ public class UI_CharacterDisplay : MonoBehaviour
     {
         if(currentPage < totalPages)
         {
-            currentPage += 1;
-            ClearCharacterItems();
-            StartCoroutine(characterRepository.LoadCharacters(currentPage));
+            int page = currentPage + 1;
+
+            OnChangePage?.Invoke(characterPanel);
+
+            LoadPage(page);
         }
     }
 
@@ -210,12 +236,25 @@ public class UI_CharacterDisplay : MonoBehaviour
     /// </summary>
     public void PreviousPage()
     {
-        if(currentPage > 0)
+        
+        if(currentPage > 1)
         {
-            currentPage -= 1;
-            ClearCharacterItems();
-            StartCoroutine(characterRepository.LoadCharacters(currentPage));
+            int page = currentPage -1;
+
+            OnChangePage?.Invoke(characterPanel);
+
+            LoadPage(page);  
         };
+    }
+
+    private void ShowCharacterInfo(Character characterInfo, Transform characterItemTransform)
+    {
+        characterDetail.SetCharacterDetails(characterInfo);
+
+        OnCharacterInfoRequest?.Invoke(characterDetailPanel, characterItemTransform);
+
+        gameObject.SetActive(false);
+        uiMenuOptions.gameObject.SetActive(false); 
     }
 
 
