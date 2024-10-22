@@ -7,14 +7,18 @@ public class UICharacterListAnimation : MonoBehaviour
     [SerializeField] private float fadeTime = 1f;
     [SerializeField] private float duration = 0.5f;
     private UI_CharacterDisplay characterDisplay;
+    private UI_PageButton pageButton;
+    
 
     private void Awake() 
     {
         characterDisplay = GetComponent<UI_CharacterDisplay>();
+        pageButton = GetComponent<UI_PageButton> ();
+        
         characterDisplay.OnCharacterListRequest += UIAnimation_OnCharacterListRequest;
         characterDisplay.OnCharacterInfoRequest += UIAnimation_OnCharacterInfoRequest;
-        characterDisplay.OnErrorTriggered += UIAnimation_OnErrorTriggered;
-        characterDisplay.OnChangePage += UIAnimation_OnChangePage;  
+
+        pageButton.OnChangePage += UIAnimation_OnChangePage;  
     }
 
     #region ========= Event Functions ==========
@@ -48,13 +52,7 @@ public class UICharacterListAnimation : MonoBehaviour
         SlideOutUI(UIRectTransform, UICanvasGroup);
     }
 
-    private void UIAnimation_OnErrorTriggered(Transform UIObject)
-    {
-        CanvasGroup UICanvasGroup = UIObject.GetComponent<CanvasGroup>();
-        RectTransform UIRectTransform = UIObject.GetComponent<RectTransform>();
-
-        ScaleUpUI(UIRectTransform, UICanvasGroup, UIRectTransform);
-    }
+   
     #endregion
 
     #region ========= Animation Functions ==========

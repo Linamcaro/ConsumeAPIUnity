@@ -807,8 +807,10 @@ GameObject:
   - component: {fileID: 183274544}
   - component: {fileID: 183274543}
   - component: {fileID: 183274545}
-  - component: {fileID: 183274546}
   - component: {fileID: 183274547}
+  - component: {fileID: 183274549}
+  - component: {fileID: 183274548}
+  - component: {fileID: 183274550}
   m_Layer: 5
   m_Name: UICharacterDisplay
   m_TagString: Untagged
@@ -891,24 +893,9 @@ MonoBehaviour:
   characterContainer: {fileID: 319967495}
   characterItemTemplate: {fileID: 675057331}
   characterPanel: {fileID: 197942210}
-  pageItemTemplate: {fileID: 1082585918}
-  paginationItemsContainer: {fileID: 2042775965}
+  uiMenuOptions: {fileID: 1100221647}
   characterDetail: {fileID: 245588096}
   characterDetailPanel: {fileID: 245588093}
-  errorPanel: {fileID: 2043219674}
-  uiMenuOptions: {fileID: 1100221647}
---- !u!114 &183274546
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 183274541}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7260f4d199de22d40aa5488a0483c87a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &183274547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -922,7 +909,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fadeTime: 1
-  scaleDuration: 0.5
+  duration: 0.5
+--- !u!114 &183274548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183274541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b09db52b5f049724cbb9b72210b66b8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeTime: 1
+  duration: 0.5
+--- !u!114 &183274549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183274541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba501337df03ac04e9a1b60587634a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  errorPanel: {fileID: 2043219674}
+  uiMenuOptions: {fileID: 1100221647}
+--- !u!114 &183274550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183274541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b3162fd26dfe834a97d8132a894aa7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pageItemTemplate: {fileID: 1082585918}
+  paginationItemsContainer: {fileID: 2042775965}
+  characterPanel: {fileID: 197942210}
 --- !u!1 &197942209
 GameObject:
   m_ObjectHideFlags: 0
@@ -2641,7 +2671,7 @@ GameObject:
   - component: {fileID: 1082585919}
   - component: {fileID: 1082585922}
   m_Layer: 5
-  m_Name: pageNumberButton
+  m_Name: pageNumberTemplate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2778,6 +2808,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1100221647}
+  - component: {fileID: 1100221648}
   m_Layer: 5
   m_Name: UIMenuOptions
   m_TagString: Untagged
@@ -2805,6 +2836,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1100221648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100221646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7260f4d199de22d40aa5488a0483c87a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1104289612
 GameObject:
   m_ObjectHideFlags: 0
@@ -2963,8 +3006,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 183274545}
-        m_TargetAssemblyTypeName: UI_CharacterDisplay, Assembly-CSharp
+      - m_Target: {fileID: 183274550}
+        m_TargetAssemblyTypeName: UI_PageButton, Assembly-CSharp
         m_MethodName: PreviousPage
         m_Mode: 1
         m_Arguments:
@@ -4448,8 +4491,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 183274545}
-        m_TargetAssemblyTypeName: UI_CharacterDisplay, Assembly-CSharp
+      - m_Target: {fileID: 183274550}
+        m_TargetAssemblyTypeName: UI_PageButton, Assembly-CSharp
         m_MethodName: NextPage
         m_Mode: 1
         m_Arguments:
@@ -5350,7 +5393,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 183274546}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UI_Menu, Assembly-CSharp
         m_MethodName: QuitGame
         m_Mode: 1

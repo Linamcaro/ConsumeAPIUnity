@@ -14,7 +14,7 @@ namespace Test.CharacterRepository
         public event Action<CharacterResponse> OnCharacterRequest;
 
         //Event that triggers when there is an connection error
-        public event Action<string> OnWebRequestError;
+        public event Action<string, int> OnWebRequestError;
         #endregion
 
         private ApiRequest apiRequest;
@@ -69,7 +69,8 @@ namespace Test.CharacterRepository
                 {
 
                     Debug.LogError($"Connection failed: {requestData.error}");
-                    OnWebRequestError?.Invoke(requestData.error); 
+                    
+                    OnWebRequestError?.Invoke(requestData.error, page); 
                   
                 }
                 else

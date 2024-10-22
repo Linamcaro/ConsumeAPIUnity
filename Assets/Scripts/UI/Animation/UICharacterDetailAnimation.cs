@@ -31,8 +31,6 @@ public class UICharacterDetailAnimation : MonoBehaviour
         StartCoroutine(HideGameObject(UIRectTransform));
     }
 
-
-
     IEnumerator HideGameObject(RectTransform rectTransform)
     {
         yield return new WaitForSeconds(0.12f);
