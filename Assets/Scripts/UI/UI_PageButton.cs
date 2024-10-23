@@ -187,7 +187,10 @@ public class UI_PageButton : MonoBehaviour
     }
     #endregion
 
-    
+    public void HiglightButton()
+    {
+        ButtonSelected(pageButtonsList[currentPage - 1]);
+    }
     IEnumerator IESlideOutAnimation()
     {
         uiAnimationManager.SlideOut(characterPanel);
