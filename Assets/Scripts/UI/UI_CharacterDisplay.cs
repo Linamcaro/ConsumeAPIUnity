@@ -2,9 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Test.CharacterRepository;
-using System;
 using System.Collections;
-
 
 public class UI_CharacterDisplay : MonoBehaviour
 {
@@ -46,10 +44,10 @@ public class UI_CharacterDisplay : MonoBehaviour
         CreateCharacterITem(response);
 
         uiMenuOptions.gameObject.SetActive(true);
-
         StartCoroutine(IESlideIn());
 
         characterContainer.gameObject.SetActive(true);
+
     }
     #endregion
 
@@ -90,6 +88,7 @@ public class UI_CharacterDisplay : MonoBehaviour
         gameObject.SetActive(false);
         uiMenuOptions.gameObject.SetActive(false); 
     }
+
     #endregion
 
     #region ============= Helper functions ===============

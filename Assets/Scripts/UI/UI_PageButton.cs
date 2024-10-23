@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Test.CharacterRepository;
@@ -11,9 +10,11 @@ public class UI_PageButton : MonoBehaviour
     #region =========== UI functions ==========
     [SerializeField] private Transform pageItemTemplate;
     [SerializeField] private Transform paginationItemsContainer;
+    [SerializeField] private Transform paginationItemDisplay;
     [SerializeField] private Transform characterPanel;
     [SerializeField] private UIAnimationManager uiAnimationManager;
-    [SerializeField] private Scrollbar scrollbar;
+    [SerializeField] private Scrollbar paginationScrollbar;
+    [SerializeField] private Scrollbar characterScrollbar;
     #endregion 
 
     #region =========== Helper functions ==========
@@ -54,7 +55,7 @@ public class UI_PageButton : MonoBehaviour
     {
         StartCoroutine(IESlideOutAnimation());
         
-        paginationItemsContainer.gameObject.SetActive(false);
+        paginationItemDisplay.gameObject.SetActive(false);
     }
 
     private void OnCharacterRequest(CharacterResponse response)
@@ -122,6 +123,7 @@ public class UI_PageButton : MonoBehaviour
         if(pageButtonsList[currentPage - 1] != null)
         {
             ButtonDeselected(pageButtonsList[currentPage - 1]);
+            ButtonSelected(pageButtonsList[pageNumber-1]);
 
         };
 
@@ -130,7 +132,8 @@ public class UI_PageButton : MonoBehaviour
         StartCoroutine(IESlideOutAnimation());
         StartCoroutine(characterRepository.LoadCharacters(currentPage));
 
-        MoveScrollbar();  
+        MoveScrollbar(paginationScrollbar);
+        ResetScrollbarValue(characterScrollbar);  
     }
 
     /// <summary>
@@ -142,7 +145,7 @@ public class UI_PageButton : MonoBehaviour
         {
             int page = currentPage + 1;
 
-            ButtonSelected(pageButtonsList[page-1]);
+            //ButtonSelected(pageButtonsList[page-1]);
 
             LoadPage(page);
         }
@@ -157,7 +160,7 @@ public class UI_PageButton : MonoBehaviour
         {
             int page = currentPage -1;
 
-            ButtonSelected(pageButtonsList[page-1]);
+            
 
             LoadPage(page);  
         };
@@ -165,11 +168,16 @@ public class UI_PageButton : MonoBehaviour
     #endregion
 
     #region ===== Visual Update UI functions =====
-    private void MoveScrollbar()
+    private void MoveScrollbar(Scrollbar scrollbar)
     {
         // Set scrollbar value based on current page
         float newScrollbarValue = (float)(currentPage - 1) / (totalPages - 1);
         scrollbar.value = newScrollbarValue;
+    }
+
+    private void ResetScrollbarValue(Scrollbar scrollbar)
+    {
+        scrollbar.value = 1f;
     }
 
     private void ButtonSelected(Button button)
@@ -203,7 +211,5 @@ public class UI_PageButton : MonoBehaviour
         characterRepository.OnCharacterRequest -= OnCharacterRequest;
         characterRepository.OnWebRequestError -= OnWebRequestError;
     }
-
-    
 
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Test.CharacterRepository;
 using TMPro;
@@ -9,7 +8,6 @@ public class UI_ErrorMessage : MonoBehaviour
 {
     [SerializeField] private Transform errorPanel;
     [SerializeField] private Transform uiMenuOptions;
-    
     [SerializeField] private UIAnimationManager uiAnimationManager;
 
     void Awake()
@@ -26,9 +24,10 @@ public class UI_ErrorMessage : MonoBehaviour
    {  
 
       uiMenuOptions.gameObject.SetActive(false);
-      StartCoroutine(ScaleUpAnimation());
 
       errorPanel.Find("errorText").GetComponent<TextMeshProUGUI>().text = $"Oh Oh there is a problem. {errorMessage}. Please try again";
+
+      StartCoroutine(ScaleUpAnimation());
 
       Button tryAgainButton = errorPanel.Find("tryAgainButton").GetComponent<Button>();
       
@@ -41,9 +40,7 @@ public class UI_ErrorMessage : MonoBehaviour
       StartCoroutine(HideGameObject());
       //Call for the character details
       StartCoroutine( CharacterRepository.Instance.LoadCharacters(page));
-
-      
-      
+ 
    }
 
    public void OnButtonClose()
@@ -62,8 +59,6 @@ public class UI_ErrorMessage : MonoBehaviour
       yield return new WaitForSeconds(0.5f);
       uiAnimationManager.ScaleUp(errorPanel);
       errorPanel.gameObject.SetActive(true);
-      
    }
-
 
 }
