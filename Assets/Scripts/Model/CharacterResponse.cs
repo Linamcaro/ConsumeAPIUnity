@@ -1,5 +1,3 @@
-using UnityEngine;
-
 
 [System.Serializable]
 public class CharacterResponse
@@ -8,14 +6,12 @@ public class CharacterResponse
     public Info info;
 }
 
-
 [System.Serializable]
 public class Info
 {
     public int count;
     public int pages;
 }
-
 
 [System.Serializable]
 public class Character

@@ -64,27 +64,42 @@ namespace Test.CharacterRepository
 
                 yield return requestData.SendWebRequest();
 
-                    //Check for connection errors
-                if(requestData.result == UnityWebRequest.Result.ConnectionError || requestData.result == UnityWebRequest.Result.ProtocolError)
+                //Check for connection errors
+                if (requestData.result == UnityWebRequest.Result.ConnectionError)
                 {
-
                     Debug.LogError($"Connection failed: {requestData.error}");
-                    
-                    OnWebRequestError?.Invoke(requestData.error, page); 
-                  
+                    OnWebRequestError?.Invoke($"Network connection failed.{requestData.error}", page);
+                }
+                else if (requestData.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.LogError($"HTTP error: {requestData.responseCode}");
+                    OnWebRequestError?.Invoke($"HTTP Error: {requestData.responseCode}", page);
+                }
+                else if (requestData.result == UnityWebRequest.Result.DataProcessingError)
+                {
+                    Debug.LogError($"Data processing error: {requestData.error}");
+                    OnWebRequestError?.Invoke("Data could not be processed.", page);
                 }
                 else
                 {
-                    CharacterResponse response = JsonUtility.FromJson<CharacterResponse>(requestData.downloadHandler.text);
-                    Debug.Log("API called");
-                        
-                    //if response is not null cache the response
-                    if(response != null)
+                    try
                     {
-                        characterResponseCache[page] = response;
-                        OnCharacterRequest?.Invoke(response);
+                        CharacterResponse response = JsonUtility.FromJson<CharacterResponse>(requestData.downloadHandler.text);
+                        Debug.Log("API called");
                             
-                    } 
+                        //if response is not null cache the response
+                        if(response != null)
+                        {
+                            characterResponseCache[page] = response;
+                            OnCharacterRequest?.Invoke(response);
+                                
+                        } 
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Failed to parse response: {e.Message}");
+                        OnWebRequestError?.Invoke("Error processing response data.", page);
+                    }
                 }  
                
             }

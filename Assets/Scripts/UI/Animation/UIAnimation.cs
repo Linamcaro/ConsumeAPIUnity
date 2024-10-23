@@ -18,9 +18,17 @@ public static class UIAnimation
         objectRectTransform.anchoredPosition = new Vector2(1455f, 53f);
 
         objectRectTransform.DOAnchorPos(new Vector2(0f,53f),duration,false).SetEase(Ease.InOutCubic);
+        
         canvasGroup.DOFade(1,fadeTime);
     }
 
+    /// <summary>
+    /// Slide out the object to the right side of the screen
+    /// </summary>
+    /// <param name="objectRectTransform"></param>
+    /// <param name="canvasGroup"></param>
+    /// <param name="fadeTime"></param>
+    /// <param name="duration"></param>
     public static void UIRightSlideOut(RectTransform objectRectTransform, CanvasGroup canvasGroup, float fadeTime =1, float duration=1)
     {
         canvasGroup.alpha = 1f;
@@ -31,7 +39,7 @@ public static class UIAnimation
     }
 
     /// <summary>
-    /// Scale object while it fade in to a certain position
+    /// Scale up object while it fade in to a certain position
     /// </summary>
     /// <param name="objectRectTransform"></param>
     /// <param name="canvasGroup"></param>
@@ -46,6 +54,13 @@ public static class UIAnimation
         canvasGroup.DOFade(1,fadeTime);
     }
 
+    /// <summary>
+    /// Scale out object while it fade away
+    /// </summary>
+    /// <param name="objectRectTransform"></param>
+    /// <param name="canvasGroup"></param>
+    /// <param name="fadeTime"></param>
+    /// <param name="scaleDuration"></param>
     public static void UIScaleOut(RectTransform objectRectTransform, CanvasGroup canvasGroup, float fadeTime =1, float scaleDuration=1)
     {
         canvasGroup.alpha = 1f;
@@ -53,6 +68,5 @@ public static class UIAnimation
         objectRectTransform.DOScale(Vector3.zero, scaleDuration).SetEase(Ease.OutCubic);
         canvasGroup.DOFade(0,fadeTime);
     }
-
 
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Test.CharacterRepository;
 using TMPro;
 using UnityEngine;
@@ -8,8 +9,8 @@ public class UI_ErrorMessage : MonoBehaviour
 {
     [SerializeField] private Transform errorPanel;
     [SerializeField] private Transform uiMenuOptions;
-    public event Action<Transform> OnErrorTriggered;
-    public event Action<Transform> OnButtonPressed;
+    
+    [SerializeField] private UIAnimationManager uiAnimationManager;
 
     void Awake()
     {
@@ -23,12 +24,11 @@ public class UI_ErrorMessage : MonoBehaviour
    /// <param name="errorMessage"></param>
    private void OnWebRequestError(string errorMessage, int page)
    {  
-      
-      OnErrorTriggered?.Invoke(errorPanel);
 
       uiMenuOptions.gameObject.SetActive(false);
+      StartCoroutine(ScaleUpAnimation());
 
-      errorPanel.Find("errorText").GetComponent<TextMeshProUGUI>().text = $"Failed to retrieve data. Error {errorMessage}. Please try again";
+      errorPanel.Find("errorText").GetComponent<TextMeshProUGUI>().text = $"Oh Oh there is a problem. {errorMessage}. Please try again";
 
       Button tryAgainButton = errorPanel.Find("tryAgainButton").GetComponent<Button>();
       
@@ -37,18 +37,33 @@ public class UI_ErrorMessage : MonoBehaviour
 
    private void TryAgain(int page)
    {
-        OnButtonPressed?.Invoke(errorPanel);
+      uiAnimationManager.ScaleOut(errorPanel);
+      StartCoroutine(HideGameObject());
+      //Call for the character details
+      StartCoroutine( CharacterRepository.Instance.LoadCharacters(page));
 
-        //Call for the character details
-        StartCoroutine( CharacterRepository.Instance.LoadCharacters(page));
-            
-        //Hide the error panel
-        errorPanel.gameObject.SetActive(false);
+      
+      
    }
 
    public void OnButtonClose()
    {
-     OnButtonPressed?.Invoke(errorPanel);
+      uiAnimationManager.ScaleOut(errorPanel);
    }
+
+   IEnumerator HideGameObject()
+   {
+      yield return new WaitForSeconds(0.4f);
+      errorPanel.gameObject.SetActive(false);
+   }
+
+   IEnumerator ScaleUpAnimation()
+   {
+      yield return new WaitForSeconds(0.5f);
+      uiAnimationManager.ScaleUp(errorPanel);
+      errorPanel.gameObject.SetActive(true);
+      
+   }
+
 
 }

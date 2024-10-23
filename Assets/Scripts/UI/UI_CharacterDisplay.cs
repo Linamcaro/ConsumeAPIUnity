@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Test.CharacterRepository;
 using System;
+using System.Collections;
 
 
 public class UI_CharacterDisplay : MonoBehaviour
@@ -13,7 +14,6 @@ public class UI_CharacterDisplay : MonoBehaviour
    [SerializeField] private Transform characterItemTemplate;
    [SerializeField] private Transform characterPanel;
    [SerializeField] private Transform uiMenuOptions;
-
    //Character Detail Variables
    [SerializeField] private UI_CharacterDetail characterDetail;
    [SerializeField] private Transform characterDetailPanel;
@@ -22,13 +22,11 @@ public class UI_CharacterDisplay : MonoBehaviour
    //object pool
    private ObjectPool<Transform> characterItemPool;
 
+   [SerializeField]private UIAnimationManager uiAnimationManager;
    #endregion
 
-    public event Action<Transform> OnCharacterListRequest;
-    public event Action<Transform, Transform> OnCharacterInfoRequest;
-
-
-    private void Awake() {
+    private void Awake() 
+    {
         characterItemTemplate.gameObject.SetActive(false);
         characterPanel.gameObject.SetActive(false);
 
@@ -38,40 +36,34 @@ public class UI_CharacterDisplay : MonoBehaviour
         // Initialize the object pool with an initial size of 10 (you can adjust the size as needed)
         characterItemPool = new ObjectPool<Transform>(characterItemTemplate, characterContainer, 2);
     }
-    #region ============= Event Handling Functions ===============
 
+    #region ============= Event Handling Functions ===============
     private void OnCharacterRequest(CharacterResponse response)
     {
-        uiMenuOptions.gameObject.SetActive(true);
-
         CharacterResponse characterResponse = response;
 
         ClearCharacterItems();
-
         CreateCharacterITem(response);
 
-        OnCharacterListRequest?.Invoke(characterPanel); 
+        uiMenuOptions.gameObject.SetActive(true);
+
+        StartCoroutine(IESlideIn());
 
         characterContainer.gameObject.SetActive(true);
     }
-
-
     #endregion
 
     #region ============= UI creation functions ===============
-
     /// <summary>
     /// Create a Character button item
     /// </summary>
     private void CreateCharacterITem(CharacterResponse characterResponse)
     {
-
         if (characterResponse != null)
         {
             foreach (var character in characterResponse.results)
             {
                 Character characterInfo = character;
-
                 //Retrieve from the character item pool the item template inside the container
                 Transform characterItemTransform = characterItemPool.GetObject(); 
 
@@ -85,24 +77,19 @@ public class UI_CharacterDisplay : MonoBehaviour
             }
         }
     }
-
-    
     #endregion
 
     #region ============= UI functionality functions ===============
- 
-
     private void ShowCharacterInfo(Character characterInfo, Transform characterItemTransform)
     {
         characterDetail.SetCharacterDetails(characterInfo);
 
-        OnCharacterInfoRequest?.Invoke(characterDetailPanel, characterItemTransform);
+        uiAnimationManager.ScaleUpFromPosition(characterDetailPanel, characterItemTransform);
+        characterDetailPanel.gameObject.SetActive(true);
 
         gameObject.SetActive(false);
         uiMenuOptions.gameObject.SetActive(false); 
     }
-
-
     #endregion
 
     #region ============= Helper functions ===============
@@ -121,7 +108,18 @@ public class UI_CharacterDisplay : MonoBehaviour
         }
     }
     #endregion
-  
+
+    IEnumerator IESlideIn()
+    {
+        yield return new WaitForSeconds(0.5f);
+        uiAnimationManager.SlideIn(characterPanel);
+        characterPanel.gameObject.SetActive(true);
+    }
+
+    private void OnDestroy()
+    {
+        characterRepository.OnCharacterRequest -= OnCharacterRequest;
+    }
 }
 
 

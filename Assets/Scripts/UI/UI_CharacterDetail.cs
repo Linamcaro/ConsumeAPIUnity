@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -12,20 +13,27 @@ public class UI_CharacterDetail : MonoBehaviour
    [SerializeField] private TextMeshProUGUI characterFirstSeenLocation;
    #endregion
 
-   public event EventHandler OnCharacterInfoClose;
-   
+   [SerializeField] private UIAnimationManager uiAnimationManager;
+
     public void SetCharacterDetails(Character character)
     {
         characterName.text = character.name;
         characterStatus.text = character.status;
         characterSpecie.text = character.species;
         characterLastLocation.text = character.location.name;
+
     }
 
     public void HideCharacterDetails()
     {
-        OnCharacterInfoClose?.Invoke(this,EventArgs.Empty);
-       
+       uiAnimationManager.ScaleOut(gameObject.transform);
+       StartCoroutine(HideGameObject());
     }
-   
+
+     IEnumerator HideGameObject()
+    {
+        yield return new WaitForSeconds(0.12f);
+        gameObject.SetActive(false);
+    }
+ 
 }
